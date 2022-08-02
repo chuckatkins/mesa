@@ -196,9 +196,6 @@ os_read_file(const char *filename, size_t *size)
 #include <sys/syscall.h>
 #include <unistd.h>
 
-/* copied from <linux/kcmp.h> */
-#define KCMP_FILE 0
-
 int
 os_same_file_description(int fd1, int fd2)
 {
@@ -208,7 +205,13 @@ os_same_file_description(int fd1, int fd2)
    if (fd1 == fd2)
       return 0;
 
+#ifdef SYS_kcmp
+   /* copied from <linux/kcmp.h> */
+   #define KCMP_FILE 0
    return syscall(SYS_kcmp, pid, pid, KCMP_FILE, fd1, fd2);
+#else
+   return -1;
+#endif
 }
 
 #else
